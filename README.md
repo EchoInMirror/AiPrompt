@@ -1,3 +1,3 @@
 # AiPrompt
-- .Net 60
-- MAUI MASA BLAZOR
+- .Net 6。0
+- MAUI MASA Blazor
