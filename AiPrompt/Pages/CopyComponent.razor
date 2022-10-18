@@ -1,0 +1,27 @@
+﻿
+<MButton Icon @onclick="@(()=>{
+                                Clipboard.SetTextAsync($"{Text},");
+                                open = true;
+                            })">
+    <MIcon>mdi-note-multiple-outline</MIcon>
+</MButton>
+
+<MSnackbar @bind-Value="open"
+           Vertical Dark>
+    <ChildContent>
+        已复制到剪切板
+    </ChildContent>
+    <ActionContent>
+        <MButton Color="indigo"
+                 Text
+                 OnClick="()=>open = false">
+            Close
+        </MButton>
+    </ActionContent>
+</MSnackbar>
+
+@code {
+    [Parameter]
+    public string Text { get; set; }
+    private bool open = false;
+}

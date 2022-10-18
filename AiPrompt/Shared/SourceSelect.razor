@@ -1,0 +1,36 @@
+﻿@using AiPrompt.Data
+@using AiPrompt.Service
+@inject ISourceService sourceService
+@inject NavigationManager navigationManager
+
+<MSelect Items="@Sources" HideDetails="@("auto")"
+         @bind-Value="Selected"
+                     ItemText="u => u.Name"
+                     ItemValue="u => u"
+                     Label="Source">
+
+    <SelectionContent Context="data">
+        @data.Item.Name
+    </SelectionContent>
+                 </MSelect>
+
+@code {
+    List<Source> Sources{ get; set; }   
+
+    private Source selected;
+    public Source Selected
+    {
+        get => selected; 
+        set{
+            selected = value;
+            sourceService.SetSource(value);
+        }
+    }
+    protected override async Task OnInitializedAsync(){
+        IEnumerable<Source> sources = await sourceService.AllSourceAsync();
+        Sources = sources.ToList();
+        Selected = Sources?[0];
+    }
+
+
+}

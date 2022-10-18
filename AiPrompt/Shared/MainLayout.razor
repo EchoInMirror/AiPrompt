@@ -1,0 +1,86 @@
+﻿@using AiPrompt.Data
+@using AiPrompt.Service
+@using BlazorComponent
+@inherits LayoutComponentBase
+@inject IPromptService promptService
+@inject NavigationManager navigationManager
+@inject StateContainer stateContainer
+@implements IDisposable
+
+<MApp>
+    <MNavigationDrawer @bind-Value="drawer" App>
+        <SourceSelect></SourceSelect>
+        <h1 class="text-h6 text-center">
+            AI-Prompt
+        </h1>
+        <MDivider></MDivider>
+        <MList Nav Dense>
+            <MListItemGroup ActiveClass="primary text--accent-4 white--text" @bind-Value="selected">
+                <MListItem Href="prefab">
+                    <MListItemTitle>预制咒语</MListItemTitle>
+                </MListItem>
+                @foreach (var item in promps) {
+                    <MListItem Id="@item.Key" Href="@item.Key">
+                        <MListItemTitle>@item.Name</MListItemTitle>
+                    </MListItem>
+                }
+            </MListItemGroup>
+        </MList>
+    </MNavigationDrawer>
+    <MAppBar Style="position:fixed;" Absolute
+             Color="primary"
+             Dark>
+        <MAppBarNavIcon @onclick="() => drawer = !drawer"></MAppBarNavIcon>
+        <MAppBarTitle>AI-Prompt</MAppBarTitle>
+        <MSpacer></MSpacer>
+        <MTextField @bind-Value="QueryString" HideDetails="@("auto")"
+                    Label="搜索"
+                    Clearable></MTextField>
+        <MButton Icon 
+            @onclick="Query">
+            <MIcon>mdi-magnify</MIcon>
+        </MButton>
+     </MAppBar>
+
+    <MSheet>
+        <MMain Class="mt-16">
+            <MContainer Fluid Transition="scroll-y-transition">
+                @Body
+            </MContainer>
+        </MMain>
+    </MSheet>
+    <MFooter App>
+        <!-- TODO -->
+    </MFooter>
+</MApp>
+
+@code {
+    private bool drawer = false;
+    private StringNumber selected = 0;
+
+    public string QueryString { get; set; }
+
+    void Query(){
+        stateContainer.Query = QueryString;
+    }
+
+    IEnumerable<Prompt> promps = new List<Prompt>();
+
+
+    //切换咒语书时拉取分类
+    protected async void OnSourceChanged(){
+        promps = await promptService.CategoriesAsync();
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized(){
+        stateContainer.OnSourceChanged += OnSourceChanged;
+        navigationManager.NavigateTo("prefab");
+    }
+
+    public void Dispose(){
+        stateContainer.OnSourceChanged -= OnSourceChanged;
+    }
+
+
+}

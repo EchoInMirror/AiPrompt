@@ -1,0 +1,43 @@
+﻿@page "/{Key}"
+@using AiPrompt.Data
+@using AiPrompt.Service
+@inject StateContainer stateContainer
+@inject IPromptService promptService
+@implements IDisposable
+
+<MCard>
+    <MContainer>
+        <ListComponent @bind-Data="Prompts"/>
+    </MContainer>
+</MCard>
+
+
+
+@code {
+    [Parameter]
+    public string Key{ get; set; }
+
+    public IEnumerable<Prompt> Prompts { get; set; } = new List<Prompt>();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Prompts = await promptService.ListAsync(Key);
+    }
+
+    async void Changed(){
+        Prompts = await promptService.ListAsync(Key);
+        StateHasChanged();
+    }
+    protected override void OnInitialized()
+    {
+        stateContainer.OnQueryChanged += Changed;
+        stateContainer.OnSourceChanged += Changed;
+    }
+    public void Dispose()
+    {
+        stateContainer.OnQueryChanged -= Changed;
+        stateContainer.OnSourceChanged -= Changed;
+
+    }
+}

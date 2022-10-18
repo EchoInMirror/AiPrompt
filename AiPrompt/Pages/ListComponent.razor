@@ -1,0 +1,17 @@
+﻿@using AiPrompt.Data
+
+<MRow Dense>
+    @foreach (var prompt in Data)
+    {
+        <MCol key="@prompt.Name" Cols="@(prompt.Key.Length>60?4:2)">
+            <ListItemComponent Prompt="@prompt" />
+        </MCol>
+    }
+</MRow>
+
+@code {
+    [Parameter]
+    public IEnumerable<Prompt> Data { get; set; }
+    [Parameter]
+    public EventCallback<IEnumerable<Prompt>> DataChanged { get; set; }
+}
