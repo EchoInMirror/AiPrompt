@@ -13,16 +13,13 @@
 
 <MApp>
     <MNavigationDrawer @bind-Value="drawer" App>
-        <SourceSelect Sources="Sources" />
+        <SourceSelect @ref="sourceSelectRef"/>
         <h1 class="text-h6 text-center">
             AI-Prompt
         </h1>
         <MDivider></MDivider>
         <MList Nav Dense>
             <MListItemGroup ActiveClass="primary text--accent-4 white--text" @bind-Value="selected">
-                <MListItem Href="prefab">
-                    <MListItemTitle>预制咒语</MListItemTitle>
-                </MListItem>
                 @foreach (var item in promps) {
                     <MListItem Id="@item.Key" Href="@item.Key">
                         <MListItemTitle>@item.Name</MListItemTitle>
@@ -45,7 +42,7 @@
                  MaxWidth="600">
             <ActivatorContent>
                 <MButton Icon
-                         @onclick="OpenSetting">
+                         @onclick="@OpenSetting">
                     <MIcon>mdi-cog</MIcon>
                 </MButton>
             </ActivatorContent>
@@ -96,11 +93,11 @@
     private bool setting = false;
 
     private Config Config { get; set; } = new();
-    private List<Source> Sources { get; set; } = new();
-    private IEnumerable<Prompt> promps = new List<Prompt>();
+    private List<Prompt> promps = new List<Prompt>();
 
     private StringNumber selected = 0;
-
+    
+    private SourceSelect sourceSelectRef;
 
     private string queryString;
     public string QueryString{
@@ -113,13 +110,13 @@
 
     async void OpenSetting(){
         Config.SourcePath = await sourceService.GetSourcePathAsync();
-        setting = !setting;
+        setting = true;
         StateHasChanged();
     }
 
     async void SaveSetting (){
         await configService.SaveConfig(Config);
-        Sources = await sourceService.AllSourceAsync();
+        await sourceSelectRef.Reload();
         setting = false;
         StateHasChanged();
     }
@@ -127,19 +124,20 @@
     //切换咒语书时拉取分类
     async void OnSourceChanged(){
         promps = await promptService.CategoriesAsync();
-        StateHasChanged();
+        if (promps.Count>0){
+            navigationManager.NavigateTo(promps[0].Key);
+            selected = 0;
+        }
     }
 
     protected override async Task OnInitializedAsync()
     {
         Config.SourcePath = await sourceService.GetSourcePathAsync();
-        Sources = await sourceService.AllSourceAsync();
     }
 
     protected override void OnInitialized()
     {
         stateContainer.OnSourceChanged += OnSourceChanged;
-        navigationManager.NavigateTo("prefab");
     }
 
     public void Dispose(){

@@ -1,7 +1,6 @@
 ﻿@using AiPrompt.Data
 @using AiPrompt.Service
 @inject ISourceService sourceService
-@inject NavigationManager navigationManager
 
 <MSelect Items="@Sources" HideDetails="@("auto")"
          @bind-Value="Selected"
@@ -15,7 +14,6 @@
 </MSelect>
 
 @code {
-    [Parameter]
     public List<Source> Sources { get; set; } = new();
 
     private Source selected;
@@ -28,6 +26,11 @@
         }
     }
 
+    public async Task Reload() {
+        Sources = await sourceService.AllSourceAsync();
+        SetDefault();
+        StateHasChanged();
+    }
 
     void SetDefault(){
         if (Sources?.Count > 0)
@@ -35,13 +38,9 @@
             Selected = Sources[0];
         }
     }
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            SetDefault();
-        }
-        return base.OnAfterRenderAsync(firstRender);
-    }
 
+    protected override async Task OnInitializedAsync() {
+        Sources = await sourceService.AllSourceAsync();
+        SetDefault();
+    }
 }

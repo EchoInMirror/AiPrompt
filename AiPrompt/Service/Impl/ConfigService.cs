@@ -10,7 +10,7 @@ public class ConfigService : IConfigService{
     }
     private readonly Db db;
 
-    private string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
+    // private string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
 
 
     public async Task SaveConfig(Config config)

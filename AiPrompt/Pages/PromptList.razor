@@ -21,11 +21,11 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        Prompts = await promptService.ListAsync(Key);
+        Prompts = await promptService.PromptsAsync(Key);
     }
 
     async void Changed(){
-        Prompts = await promptService.ListAsync(Key);
+        Prompts = await promptService.PromptsAsync(Key);
         StateHasChanged();
     }
     protected override void OnInitialized()
