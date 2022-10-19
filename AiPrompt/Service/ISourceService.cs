@@ -19,7 +19,9 @@ public interface ISourceService{
 
     public Task<IEnumerable<Prompt>> ReadCategoriesAsync();
 
-    public Task<IEnumerable<Source>> AllSourceAsync();
+    public Task<List<Source>> AllSourceAsync();
+
+    public Task<string> GetSourcePathAsync();
 
     public IEnumerable<Prompt> ReadPrefabPrompts(string key);
     public Task<IEnumerable<Prompt>> ReadPrefabPromptsAsync(string key);

@@ -1,15 +1,10 @@
 ﻿using AiPrompt.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace AiPrompt.Service;
+namespace AiPrompt.Util;
 
 public class StateContainer
 {
-    private string? query;
+    private string query;
 
     public string Query
     {
@@ -20,10 +15,10 @@ public class StateContainer
             OnQueryChanged?.Invoke();
         }
     }
-    public event Action? OnQueryChanged;
+    public event Action OnQueryChanged;
 
 
-    private Source? source;
+    private Source source;
     public Source Source
     {
         get => source;
@@ -33,6 +28,6 @@ public class StateContainer
             OnSourceChanged?.Invoke();
         }
     }
-    public event Action? OnSourceChanged;
+    public event Action OnSourceChanged;
 
 }

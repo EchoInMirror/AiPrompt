@@ -7,15 +7,16 @@
          @bind-Value="Selected"
                      ItemText="u => u.Name"
                      ItemValue="u => u"
-                     Label="Source">
+                     Label="咒语书">
 
     <SelectionContent Context="data">
         @data.Item.Name
     </SelectionContent>
-                 </MSelect>
+</MSelect>
 
 @code {
-    List<Source> Sources{ get; set; }   
+    [Parameter]
+    public List<Source> Sources { get; set; } = new();
 
     private Source selected;
     public Source Selected
@@ -26,11 +27,21 @@
             sourceService.SetSource(value);
         }
     }
-    protected override async Task OnInitializedAsync(){
-        IEnumerable<Source> sources = await sourceService.AllSourceAsync();
-        Sources = sources.ToList();
-        Selected = Sources?[0];
-    }
 
+
+    void SetDefault(){
+        if (Sources?.Count > 0)
+        {
+            Selected = Sources[0];
+        }
+    }
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            SetDefault();
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
 
 }

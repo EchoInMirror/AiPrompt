@@ -1,6 +1,6 @@
 ﻿using AiPrompt.Service;
 using AiPrompt.Service.Impl;
-using Microsoft.AspNetCore.Components.WebView.Maui;
+using AiPrompt.Util;
 
 namespace AiPrompt;
 
@@ -27,9 +27,10 @@ public static class MauiProgram
 				options.Primary = "#7160E8";
 			});
 		});
-
-		builder.Services.AddSingleton<ISourceService, SourceService>();
+        builder.Services.AddSingleton<Db>();
+        builder.Services.AddSingleton<ISourceService, SourceService>();
         builder.Services.AddSingleton<IPromptService, PromptService>();
+        builder.Services.AddSingleton<IConfigService, ConfigService>();
         builder.Services.AddSingleton<StateContainer>();
 
         return builder.Build();

@@ -1,6 +1,6 @@
 ﻿
-<MButton Icon @onclick="@(()=>{
-                                Clipboard.SetTextAsync($"{Text},");
+<MButton Icon @onclick="@(async ()=>{
+                                await Clipboard.SetTextAsync(Text);
                                 open = true;
                             })">
     <MIcon>mdi-note-multiple-outline</MIcon>
@@ -12,16 +12,23 @@
         已复制到剪切板
     </ChildContent>
     <ActionContent>
-        <MButton Color="indigo"
+        <MButton Color="blue darken-1"
                  Text
                  OnClick="()=>open = false">
-            Close
+            关闭
         </MButton>
     </ActionContent>
 </MSnackbar>
 
 @code {
+    private string text;
     [Parameter]
-    public string Text { get; set; }
+    public string Text { get{
+            if (!text.EndsWith(","))
+            {
+                return $"{text},";
+            }
+            return text;
+        } set=>text=value; }
     private bool open = false;
 }

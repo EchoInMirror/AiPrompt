@@ -1,15 +1,19 @@
 ﻿@using AiPrompt.Data
 @using AiPrompt.Service
+@using AiPrompt.Util
 @using BlazorComponent
 @inherits LayoutComponentBase
+
 @inject IPromptService promptService
+@inject ISourceService sourceService
+@inject IConfigService configService
 @inject NavigationManager navigationManager
 @inject StateContainer stateContainer
 @implements IDisposable
 
 <MApp>
     <MNavigationDrawer @bind-Value="drawer" App>
-        <SourceSelect></SourceSelect>
+        <SourceSelect Sources="Sources" />
         <h1 class="text-h6 text-center">
             AI-Prompt
         </h1>
@@ -36,44 +40,104 @@
         <MTextField @bind-Value="QueryString" HideDetails="@("auto")"
                     Label="搜索"
                     Clearable></MTextField>
-        <MButton Icon 
-            @onclick="Query">
-            <MIcon>mdi-magnify</MIcon>
-        </MButton>
+        <MDialog @bind-Value="setting"
+                 Persistent
+                 MaxWidth="600">
+            <ActivatorContent>
+                <MButton Icon
+                         @onclick="OpenSetting">
+                    <MIcon>mdi-cog</MIcon>
+                </MButton>
+            </ActivatorContent>
+            <ChildContent>
+                <MCard>
+                    <MCardTitle>
+                        <span class="text-h5">设置</span>
+                    </MCardTitle>
+                    <MCardText>
+                        <MContainer>
+                            <MRow>
+                                <MCol Cols="12">
+                                    <MTextField Label="咒语书目录" TValue="string" @bind-Value="Config.SourcePath"></MTextField>
+                                </MCol>
+                            </MRow>
+                        </MContainer>
+                        <small>(((((pussy)))))!!!</small>
+                    </MCardText>
+                    <MCardActions>
+                        <MSpacer></MSpacer>
+                        <MButton Color="blue darken-1"
+                                 Text
+                                 OnClick="() => setting = false">
+                            关闭
+                        </MButton>
+                        <MButton Color="blue darken-1"
+                                 Text
+                                 OnClick="SaveSetting">
+                            保存
+                        </MButton>
+                    </MCardActions>
+                </MCard>
+            </ChildContent>
+        </MDialog>
      </MAppBar>
 
-    <MSheet>
-        <MMain Class="mt-16">
-            <MContainer Fluid Transition="scroll-y-transition">
-                @Body
-            </MContainer>
-        </MMain>
-    </MSheet>
+    <MMain Class="mt-16">
+        @Body
+    </MMain>
     <MFooter App>
         <!-- TODO -->
     </MFooter>
 </MApp>
 
+
 @code {
     private bool drawer = false;
+    private bool setting = false;
+
+    private Config Config { get; set; } = new();
+    private List<Source> Sources { get; set; } = new();
+    private IEnumerable<Prompt> promps = new List<Prompt>();
+
     private StringNumber selected = 0;
 
-    public string QueryString { get; set; }
 
-    void Query(){
-        stateContainer.Query = QueryString;
+    private string queryString;
+    public string QueryString{
+        get => queryString; 
+        set {
+            queryString = value;
+            stateContainer.Query = value;
+        }
     }
 
-    IEnumerable<Prompt> promps = new List<Prompt>();
+    async void OpenSetting(){
+        Config.SourcePath = await sourceService.GetSourcePathAsync();
+        setting = !setting;
+        StateHasChanged();
+    }
 
+    async void SaveSetting (){
+        await configService.SaveConfig(Config);
+        Sources = await sourceService.AllSourceAsync();
+        setting = false;
+        StateHasChanged();
+    }
 
     //切换咒语书时拉取分类
-    protected async void OnSourceChanged(){
+    async void OnSourceChanged(){
         promps = await promptService.CategoriesAsync();
         StateHasChanged();
     }
 
-    protected override void OnInitialized(){
+    protected override async Task OnInitializedAsync()
+    {
+        Config.SourcePath = await sourceService.GetSourcePathAsync();
+        Sources = await sourceService.AllSourceAsync();
+    }
+
+    protected override void OnInitialized()
+    {
         stateContainer.OnSourceChanged += OnSourceChanged;
         navigationManager.NavigateTo("prefab");
     }
@@ -81,6 +145,4 @@
     public void Dispose(){
         stateContainer.OnSourceChanged -= OnSourceChanged;
     }
-
-
 }

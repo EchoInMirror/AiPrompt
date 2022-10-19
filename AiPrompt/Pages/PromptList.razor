@@ -1,15 +1,14 @@
 ﻿@page "/{Key}"
 @using AiPrompt.Data
 @using AiPrompt.Service
+@using AiPrompt.Util
 @inject StateContainer stateContainer
 @inject IPromptService promptService
 @implements IDisposable
 
-<MCard>
-    <MContainer>
-        <ListComponent @bind-Data="Prompts"/>
-    </MContainer>
-</MCard>
+<MContainer>
+    <ListComponent @bind-Data="Prompts"/>
+</MContainer>
 
 
 
