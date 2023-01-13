@@ -22,9 +22,9 @@ public static class MauiProgram
 #endif
 		builder.Services.AddMasaBlazor(options =>
 		{
-			options.UseTheme(options =>
+			options.UseTheme(themeOptions =>
 			{
-				options.Primary = "#7160E8";
+				themeOptions.Primary = "#7160E8";
 			});
 		});
         builder.Services.AddSingleton<Db>();

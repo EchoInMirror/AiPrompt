@@ -15,16 +15,15 @@ public class Prompt{
 
     private string image;
     public string Image { get=> image; set{
-        image = LocalFile2Base64(value);
+        LocalFile2Base64(value);
     }}
 
-    private string LocalFile2Base64(string value)
+    private async void LocalFile2Base64(string value)
     {
         if (!File.Exists(value)){
-            return value;
+            return ;
         }
-        string base64 = $"data:image/png;base64,{Convert.ToBase64String(File.ReadAllBytes(value))}";
-        return base64;
+        image = $"data:image/png;base64,{Convert.ToBase64String(await File.ReadAllBytesAsync(value))}";
     }
 
     public bool Active { get; set; } 
