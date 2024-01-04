@@ -1,8 +1,32 @@
 ﻿<maui:MauiWinUIApplication
-    x:Class="AiPrompt.WinUI.App"
+    x:Class="AiPrompt.Platforms.Windows.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:maui="using:Microsoft.Maui"
-    xmlns:local="using:AiPrompt.WinUI">
+    xmlns:maui="using:Microsoft.Maui">
+    <maui:MauiWinUIApplication.Resources>
+        <SolidColorBrush x:Key="WindowCaptionBackground"><![CDATA[Transparent]]></SolidColorBrush>
+        <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled"><![CDATA[Transparent]]></SolidColorBrush>
+        <DataTemplate x:Key="MauiAppTitleBarTemplate">
+            <ContentControl x:Name="AppTitleBarContentControl">
+                <Grid Height="48" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="songs_dark.png"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Width="16" Height="16"
+                           Margin="24,0,0,0" />
+                    <TextBlock Text="Title"
+                               Grid.Column="1"
+                               VerticalAlignment="Center"
+                               Margin="16,0,0,0" />
+                </Grid>
+                
+            </ContentControl>
 
+        </DataTemplate>
+
+    </maui:MauiWinUIApplication.Resources>
 </maui:MauiWinUIApplication>
