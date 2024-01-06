@@ -10,7 +10,13 @@ namespace AiPrompt.Shared;
 
 public class MainLayoutState : BaseState {
     public ObservableCollection<Prompt> Prompts { get; set; } = [];
-    public Config Config { get; set; } = new();
+}
+
+public class Search : MauiControls.SearchHandler {
+    protected override void OnQueryChanged(string oldValue, string newValue) {
+        
+        base.OnQueryChanged(oldValue, newValue);
+    }
 }
 
 public class MainLayout : BaseComponent<MainLayoutState> {
@@ -18,21 +24,33 @@ public class MainLayout : BaseComponent<MainLayoutState> {
             new ShellContent(L(Languages.Key.Shell.Home)) {
                 new ContentPage(L(Languages.Key.Shell.Home))
             }.Route("Home"),
-            State.Prompts.Select(p => new ShellContent(p.Name) {
-                    new PromptListPage(p.Key)
-                }.Route(p.Key)
-            )
+            State.Prompts.Select(p => new ShellContent(p.Name)
+                .RenderContent(()=>new PromptListPage().Key(p.Key))
+                .Route(p.Key)
+            ),
+            new ShellContent {
+                new SettingPage()
+            }.FlyoutItemIsVisible(false).Route("Setting")
         }.ItemTemplate(RenderFlyoutItemTemplate)
-        .FlyoutHeader(RenderHeaderTemplate())
+        .FlyoutHeader(RenderHeader())
+        .FlyoutFooter(RenderFooter())
         .BackgroundColor(Colors.Transparent)
         .FlyoutBackgroundColor(Colors.Transparent)
         .FlyoutBehavior(FlyoutBehavior.Locked)
-        .Set(MauiControls.Shell.NavBarIsVisibleProperty, false);
-
-    private VisualNode RenderHeaderTemplate() {
-        return Picker();
+        
+        .Set(MauiControls.Shell.SearchHandlerProperty, new Search());
+    
+    private VisualNode RenderHeader() {
+        return new SourcePicker();
     }
-    private VisualNode RenderFlyoutItemTemplate(Microsoft.Maui.Controls.BaseShellItem item)
+    
+    private VisualNode RenderFooter() {
+        return RenderFlyoutItemTemplate(new (){ Title = L(Languages.Key.Setting) }).OnTapped(() => {
+            MauiControls.Shell.Current.GoToAsync("///Settings");
+        });
+    }
+    
+    private Grid RenderFlyoutItemTemplate(MauiControls.BaseShellItem item)
         => Grid("36", "36,*", Image().GridColumn(0)
                 .WidthRequest(16)
                 .HeightRequest(16)
@@ -41,17 +59,18 @@ public class MainLayout : BaseComponent<MainLayoutState> {
                 .HCenter(),
             Label(item.Title)
                 .GridColumn(1)
-                .VCenter()
+                .VCenter() 
         );
 
-    protected override async void OnMounted() {
-        var sourceService = Services.GetService<ISourceService>()!;
-        var sourcePath = await sourceService.GetSourcePathAsync();
-        SetState(s => s.Config.SourcePath = sourcePath);
-        OnSourceChanged();
+    protected override void OnMounted() {
+        Store.OnSourceChanged += OnSourceChanged;
         base.OnMounted();
     }
 
+    protected override void OnWillUnmount() {
+        Store.OnSourceChanged -= OnSourceChanged;
+        base.OnWillUnmount();
+    }
 
     // async void OpenSetting(){
     //     Config.SourcePath = await sourceService.GetSourcePathAsync();
@@ -65,19 +84,12 @@ public class MainLayout : BaseComponent<MainLayoutState> {
     // }
     //
     //切换咒语书时拉取分类
-    private async void OnSourceChanged() {
+    private async void OnSourceChanged(Source? source) {
+        if (source is null or {Path: null or ""})
+            return;
         var promptService = Services.GetService<IPromptService>()!;
-        var categories = await promptService.GetCategoriesAsync("");
+        var categories = await promptService.GetCategoriesAsync(source.Path);
         SetState(s => s.Prompts = new ObservableCollection<Prompt>(categories));
-        // if (categories.Count>0) {
-        //     Navigation.PushAsync()
-        //     NavigateTo(promps[0].Key);
-        //     selected = 0;
-        // }
     }
-    //
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     Config.SourcePath = await sourceService.GetSourcePathAsync();
-    // }
+
 }

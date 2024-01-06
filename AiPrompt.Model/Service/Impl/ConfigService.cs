@@ -5,21 +5,29 @@ namespace AiPrompt.Model.Service.Impl;
 
 public class ConfigService(Database database) : IConfigService{
 
-    /// <summary>
-    /// 确保config唯一性
-    /// </summary>
-    /// <param name="config"></param>
-    public async Task SaveAsync(Config config) {
-        var exists = await GetAsync();
-        var save = config with { Id = exists.Id };
-        await database.UpdateAsync(save);
+    public async Task SaveAsync<T>(Config<T> config) {
+        var exists = await GetAsync<T>(config.Key);
+        var cache = config.ToStr();
+        if (exists != null) {
+            await database.UpdateAsync(cache);
+        }else {
+            await database.InsertAsync(cache);
+        }
     }
 
-    public async Task<Config> GetAsync() {
-        return (await database.GetDefaultAsync<Config>())!;
+    public async Task<Config<T>?> GetAsync<T>(string key) {
+        var get = await database
+            .Table<Config<string>>().Where(i => i.Key == key)
+            .FirstOrDefaultAsync();
+        var config = get?.To<T>();
+        return config;
     }
     
-    public Config Get() {
-        return database.GetDefault<Config>()!;
+    public Config<T>? Get<T>(string key) {
+        var get = database
+            .Table<Config<string>>().Where(i => i.Key == key)
+            .FirstOrDefaultAsync().GetAwaiter().GetResult();
+        var cache = get?.To<T>();
+        return cache;
     }
 }

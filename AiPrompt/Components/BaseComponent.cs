@@ -1,6 +1,7 @@
 using AiPrompt.I18n;
 using AiPrompt.Model.Data;
 using AiPrompt.Model.Utils;
+using AiPrompt.Util;
 using MauiReactor;
 using Microsoft.Maui.ApplicationModel;
 
@@ -65,16 +66,9 @@ public abstract class BaseComponent<TState,TProps> : Component<TState,TProps>
 
     
     protected MauiControls.Page CurrentPage => ReactorApplication.Current.MainPage;
+
+    protected Store Store => Ioc.Resolve<Store>();
     
-    
-    
-    /// <summary>
-    /// 页脚
-    /// </summary>
-    /// <returns></returns>
-    protected Grid Footer() {
-        return Grid().BackgroundColor(DefaultBlackWhiteColor(0.25f));
-    }
     /// <summary>
     /// 主题切换事件
     /// </summary>

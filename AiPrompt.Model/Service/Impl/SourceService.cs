@@ -1,10 +1,10 @@
-﻿using AiPrompt.Model.Entity;
-using AiPrompt.Util;
+﻿using AiPrompt.Model.Constants;
+using AiPrompt.Model.Entity;
 using OfficeOpenXml;
 
 namespace AiPrompt.Model.Service.Impl;
 
-public class SourceService(StateContainer stateContainer, IConfigService configService) : ISourceService {
+public class SourceService(IConfigService configService) : ISourceService {
     /// <summary>
     /// 获取目录下所有文件
     /// </summary>
@@ -13,17 +13,16 @@ public class SourceService(StateContainer stateContainer, IConfigService configS
     /// <returns></returns>
     private async Task FillDirectoryAllSource(string? dir, List<Source> list){
         await Task.Run(async () =>{
-            if (dir != null) {
+            if (dir is not null and not "") {
                 var d = new DirectoryInfo(dir);
                 if (d.Exists) {
-                    var files = d.GetFiles();//文件
-                    var directs = d.GetDirectories();//文件夹
+                    var files = d.GetFiles();
+                    var directs = d.GetDirectories();
                     foreach (var f in files) {
                         if (f.Extension is ".xlsx" or ".xls") {
-                            list.Add(new Source(f.Name, f.FullName));//添加文件名到列表中  
+                            list.Add(new Source(f.Name, f.FullName));
                         }
                     }
-                    //获取子文件夹内的文件列表，递归遍历  
                     foreach (var dd in directs) {
                         await FillDirectoryAllSource(dd.FullName, list);
                     }
@@ -43,18 +42,20 @@ public class SourceService(StateContainer stateContainer, IConfigService configS
     }
 
     public async Task<string?> GetSourcePathAsync(){
-        Config config = await configService.GetAsync();
-        return config.SourcePath;
+        var config = await configService.GetAsync<string>(ConfigKeyConstants.SourcePath);
+        return config?.Value;
     }
+
     /// <summary>
     /// 读取咒语
     /// </summary>
+    /// <param name="sourcePath"></param>
     /// <param name="categoryKey">分类键</param>
     /// <returns></returns>
-    public IEnumerable<Prompt> ReadPrompts(string categoryKey){
+    public IEnumerable<Prompt> ReadPrompts(string sourcePath,string categoryKey){
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         List<Prompt> list = [];
-        using ExcelPackage excelPackage = new(stateContainer.Source.Path);
+        using ExcelPackage excelPackage = new(sourcePath);
         var excelWorksheet = excelPackage.Workbook.Worksheets[0];
         for (var i = 1; i <= excelWorksheet.Dimension?.End.Column; i++) {
             if (i % 3 != 1) continue;
@@ -74,25 +75,25 @@ public class SourceService(StateContainer stateContainer, IConfigService configS
         return list;
     }
 
-    public async Task<IEnumerable<Prompt>> ReadPromptsAsync(string categoryKey){
-        return await Task.Run(() => ReadPrompts(categoryKey));
+    public async Task<IEnumerable<Prompt>> ReadPromptsAsync(string sourcePath ,string categoryKey){
+        return await Task.Run(() => ReadPrompts(sourcePath ,categoryKey));
     }
 
 
 
 
-    public async Task<IEnumerable<Prompt>> ReadCategoriesAsync(string filepath){
-        return await Task.Run(()=>ReadCategories(filepath));
+    public async Task<IEnumerable<Prompt>> ReadCategoriesAsync(string sourcePath){
+        return await Task.Run(()=>ReadCategories(sourcePath));
     }
     /// <summary>
     /// 获取分类
     /// </summary>
     /// <returns></returns>
 
-    public IEnumerable<Prompt> ReadCategories(string filepath){
+    public IEnumerable<Prompt> ReadCategories(string sourcePath){
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         List<Prompt> list = [];
-        using ExcelPackage excelPackage = new(filepath);
+        using ExcelPackage excelPackage = new(sourcePath);
         var excelWorksheet = excelPackage.Workbook.Worksheets[0];
         for (var i = 1; i <= excelWorksheet.Dimension?.End.Column; i++) {
             if (i % 3 != 1) continue;
@@ -103,18 +104,16 @@ public class SourceService(StateContainer stateContainer, IConfigService configS
         return list;
     }
 
-    public void SetSource(Source source){
-        stateContainer.Source = source ?? throw new ArgumentNullException();
-    }
+
     /// <summary>
     /// 读取预制咒语
     /// </summary>
-    /// <param name="key"></param>
+    /// <param name="sourcePath"></param>
     /// <returns></returns>
-    public IEnumerable<Prompt> ReadPrefabPrompts(string key){
+    public IEnumerable<Prompt> ReadPrefabPrompts(string sourcePath){
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         List<Prompt> list = [];
-        using ExcelPackage excelPackage = new(stateContainer.Source.Path);
+        using ExcelPackage excelPackage = new(sourcePath);
         var excelWorksheet = excelPackage.Workbook.Worksheets[1];
         for (var i = 1; i <= excelWorksheet.Dimension?.End.Row; i++)
         {
@@ -126,8 +125,8 @@ public class SourceService(StateContainer stateContainer, IConfigService configS
         return list;
     }
 
-    public async Task<IEnumerable<Prompt>> ReadPrefabPromptsAsync(string key){
-        return await Task.Run(() => ReadPrefabPrompts(key));
+    public async Task<IEnumerable<Prompt>> ReadPrefabPromptsAsync(string sourcePath){
+        return await Task.Run(() => ReadPrefabPrompts(sourcePath));
     }
 
 

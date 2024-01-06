@@ -22,16 +22,7 @@ public static class MauiProgram
 #if DEBUG
 			.EnableMauiReactorHotReload()
 #endif
-			.ConfigureLifecycleEvents(events => {
-
-#if WINDOWS10_0_17763_0_OR_GREATER
-					events.AddWindows(windows => windows.OnWindowCreated(window => { 
-						
-					}));
-#endif
-				}
-			);
-		builder.ServiceRegister();
+		.ServiceRegister();
 		var app = builder.Build();
 		Ioc.SetProvider(app.Services);
         return app;
